@@ -72,6 +72,30 @@ int main()
     // Connect last index with vertex 1 to close the circle
     indices[3 * sides - 1] = 1;
 
+
+    // Triangle
+    float quad_old[] = {
+       -0.5f, -0.5f, 0.0f, // left
+        0.5f, -0.5f, 0.0f, // right
+        0.5f,  0.5f, 0.0f,  // top
+        0.5f,  0.5f, 0.0f,  // top QUAD
+        -0.5f, -0.5f, 0.0f, // left QUAD
+        -0.5f, 0.5f, 0.0f // left top QUAD
+
+    };
+
+    float triangle[] = {
+   -0.5f, -0.5f, 0.0f, // bottom left
+    0.5f, -0.5f, 0.0f, // bottom right
+    0.5f,  0.5f, 0.0f,  // top right
+    -0.5f, 0.5f, 0.0f //   top left
+
+    };
+
+    std::array<unsigned int, 6> quad_indices = { 0, 1, 2, 2, 0, 3 };
+
+
+
     VertexBufferObject vbo;
     VertexArrayObject vao;
     ElementBufferObject ebo;
@@ -80,10 +104,14 @@ int main()
     vao.Bind();
 
     vbo.Bind();
-    vbo.AllocateData<float>(std::span(vertices));
+    //vbo.AllocateData<float>(std::span(vertices));
+    // Triangle
+    vbo.AllocateData<float>(std::span(triangle));
 
     ebo.Bind();
-    ebo.AllocateData<unsigned int>(std::span(indices));
+    //ebo.AllocateData<unsigned int>(std::span(indices));
+    // Quad with indices
+    ebo.AllocateData<unsigned int>(std::span(quad_indices));
 
     VertexAttribute position(Data::Type::Float, 3);
     vao.SetAttribute(0, position, 0);
@@ -99,7 +127,7 @@ int main()
     ElementBufferObject::Unbind();
 
     // uncomment this call to draw in wireframe polygons.
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // render loop
     // -----------
@@ -110,14 +138,18 @@ int main()
         processInput(window.GetInternalWindow());
 
         // render
-        // ------
-        deviceGL.Clear(Color(0.2f, 0.3f, 0.3f, 1.0f));
+        // ------ RGB
+        deviceGL.Clear(Color(1.0f, 0.3f, 0.3f, 1.0f));
 
         // draw our first triangle
         glUseProgram(shaderProgram);
         vao.Bind(); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-        //glDrawArrays(GL_TRIANGLES, 0, vertexCount);
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+        // Drawing Triangle:
+        //glDrawArrays(GL_TRIANGLES, 0, sizeof(triangle));
+        //glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+        // 
+        // Quad
+        glDrawElements(GL_TRIANGLES, quad_indices.size(), GL_UNSIGNED_INT, 0);
         // VertexArrayObject::Unbind(); // no need to unbind it every time 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -135,6 +167,7 @@ int main()
     // This is now done in the destructor of DeviceGL
     return 0;
 }
+
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
@@ -158,7 +191,7 @@ int buildShaderProgram()
         "out vec4 FragColor;\n"
         "void main()\n"
         "{\n"
-        "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+        "   FragColor = vec4(0.5f, 0.5f, 0.9f, 1.0f);\n"
         "}\n\0";
 
     // vertex shader
